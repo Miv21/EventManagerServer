@@ -28,8 +28,8 @@ namespace WebApplication2.Controllers
             if (await _context.Users.AnyAsync(u => u.Username == user.Username))
                 return BadRequest("Пользователь уже существует");
 
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
-            user.RoleId = 2;
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            user.RoleId = 1;
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -42,8 +42,10 @@ namespace WebApplication2.Controllers
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loginRequest.Username);
 
-            if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.PasswordHash, user.PasswordHash))
+            if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.PasswordHash))
+            {
                 return Unauthorized("Неверные учетные данные");
+            }
 
             var token = GenerateJwtToken(user);
             return Ok(new { token });

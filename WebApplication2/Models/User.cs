@@ -15,5 +15,8 @@ namespace WebApplication2.Models
 
         [JsonIgnore]
         public Role? Role { get; set; }
+
+        [NotMapped]
+        public string Password { get; set; } = string.Empty;
     }
 }
