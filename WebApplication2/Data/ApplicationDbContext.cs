@@ -19,6 +19,19 @@ namespace WebApplication2.Data
                 new Role { Id = 2, Name = "User" }
             );
 
+            modelBuilder.Entity<UserEvent>()
+                .HasKey(ue => ue.Id);
+
+            modelBuilder.Entity<UserEvent>()
+                .HasOne(ue => ue.User)
+                .WithMany(u => u.UserEvents)
+                .HasForeignKey(ue => ue.UserId);
+
+            modelBuilder.Entity<UserEvent>()
+                .HasOne(ue => ue.Event)
+                .WithMany(e => e.UserEvents)
+                .HasForeignKey(ue => ue.EventId);
+
             base.OnModelCreating(modelBuilder);
         }
     }

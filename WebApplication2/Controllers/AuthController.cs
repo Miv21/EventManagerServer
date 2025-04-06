@@ -6,6 +6,7 @@ using System.Text;
 using WebApplication2.Data;
 using WebApplication2.Models;
 using Microsoft.EntityFrameworkCore;
+using WebApplication2.DtoModels;
 
 namespace WebApplication2.Controllers
 {
@@ -26,15 +27,39 @@ namespace WebApplication2.Controllers
         public async Task<IActionResult> Register([FromBody] User user)
         {
             if (await _context.Users.AnyAsync(u => u.Username == user.Username))
+            {
                 return BadRequest("Пользователь уже существует");
+            }
 
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
-            user.RoleId = 2;
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            user.RoleId = 1;
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return Ok("Пользователь зарегистрирован");
+            return Ok("Пользователь зарегистрирован с ролью Admin");
+        }
+
+        [HttpPost("register-user")]
+        public async Task<IActionResult> RegisterUser([FromBody] RegisterUserDto userDto)
+        {
+            if (await _context.Users.AnyAsync(u => u.Email == userDto.Email))
+            {
+                return BadRequest("Пользователь с таким Email уже существует");
+            }
+
+            var user = new User
+            {
+                Username = userDto.Username,
+                Email = userDto.Email,
+                RoleId = 2, // Назначаем роль 2
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("defaultPassword") // Пароль не требуется
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            return Ok("Пользователь зарегистрирован с ролью User");
         }
 
         [HttpPost("login")]
@@ -42,8 +67,15 @@ namespace WebApplication2.Controllers
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loginRequest.Username);
 
-            if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.PasswordHash, user.PasswordHash))
+            if (user == null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.PasswordHash))
+            {
                 return Unauthorized("Неверные учетные данные");
+            }
+
+            if (user.RoleId == 2)
+            {
+                return Forbid("Вход запрещен для пользователей с ролью User");
+            }
 
             var token = GenerateJwtToken(user);
             return Ok(new { token });

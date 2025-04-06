@@ -91,9 +91,6 @@ namespace WebApplication2.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("EventId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -106,8 +103,6 @@ namespace WebApplication2.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("EventId");
 
                     b.HasIndex("RoleId");
 
@@ -150,10 +145,6 @@ namespace WebApplication2.Migrations
 
             modelBuilder.Entity("WebApplication2.Models.User", b =>
                 {
-                    b.HasOne("WebApplication2.Models.Event", null)
-                        .WithMany("Participants")
-                        .HasForeignKey("EventId");
-
                     b.HasOne("WebApplication2.Models.Role", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId")
@@ -166,13 +157,13 @@ namespace WebApplication2.Migrations
             modelBuilder.Entity("WebApplication2.Models.UserEvent", b =>
                 {
                     b.HasOne("WebApplication2.Models.Event", "Event")
-                        .WithMany()
+                        .WithMany("UserEvents")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("WebApplication2.Models.User", "User")
-                        .WithMany()
+                        .WithMany("UserEvents")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -184,7 +175,12 @@ namespace WebApplication2.Migrations
 
             modelBuilder.Entity("WebApplication2.Models.Event", b =>
                 {
-                    b.Navigation("Participants");
+                    b.Navigation("UserEvents");
+                });
+
+            modelBuilder.Entity("WebApplication2.Models.User", b =>
+                {
+                    b.Navigation("UserEvents");
                 });
 #pragma warning restore 612, 618
         }

@@ -19,8 +19,7 @@ namespace WebApplication2.Controllers
         [HttpPost("{eventId}")]
         public async Task<IActionResult> AddUserToEvent(int eventId, [FromBody] User user)
         {
-            var existingEvent = await _context.Events.Include(e => e.Participants)
-                                                     .FirstOrDefaultAsync(e => e.Id == eventId);
+            var existingEvent = await _context.Events.FindAsync(eventId);
             if (existingEvent == null)
             {
                 return NotFound("Event not found.");
@@ -32,15 +31,26 @@ namespace WebApplication2.Controllers
                 return NotFound("User not found.");
             }
 
-            if (!existingEvent.Participants.Contains(existingUser))
+            // Проверяем, существует ли уже связь в таблице UserEvents
+            var userEventExists = await _context.UserEvents
+                .AnyAsync(ue => ue.EventId == eventId && ue.UserId == user.Id);
+
+            if (userEventExists)
             {
-                existingEvent.Participants.Add(existingUser);
-                await _context.SaveChangesAsync();
-                return NoContent();
+                return BadRequest("User already added to the event.");
             }
 
-            return BadRequest("User already added to the event.");
-        }
+            // Добавляем связь в UserEvents
+            var userEvent = new UserEvent
+            {
+                EventId = eventId,
+                UserId = user.Id
+            };
 
+            _context.UserEvents.Add(userEvent);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }

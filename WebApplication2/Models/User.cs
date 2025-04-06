@@ -15,5 +15,10 @@ namespace WebApplication2.Models
 
         [JsonIgnore]
         public Role? Role { get; set; }
+
+        [NotMapped]
+        public string Password { get; set; }
+
+        public ICollection<UserEvent> UserEvents { get; set; } = new List<UserEvent>();
     }
 }

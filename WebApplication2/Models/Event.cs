@@ -13,6 +13,6 @@ namespace WebApplication2.Models
         public int CreatedBy { get; set; }
         public User? User { get; set; }
 
-        public ICollection<User> Participants { get; set; } = new List<User>();
+        public ICollection<UserEvent> UserEvents { get; set; } = new List<UserEvent>();
     }
 }

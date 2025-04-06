@@ -5,7 +5,7 @@
 namespace WebApplication2.Migrations
 {
     /// <inheritdoc />
-    public partial class Babil201 : Migration
+    public partial class migration2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
